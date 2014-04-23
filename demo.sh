@@ -104,9 +104,17 @@ scenario_pull_origin_master_then_log () {
     cleanup
 }
 
+###scenario_pull_origin_master_then_postreview () {
+###    init
+###    cleanup
+###    commit_change "$ALICE_CLONE_PATH" "First feature"
+###    push_from_clone "$ALICE_CLONE_PATH"
+###}
+
 main() {
     preamble
     scenario_pull_origin_master_then_log
+    ###scenario_pull_origin_master_then_postreview
 }
 
 main
