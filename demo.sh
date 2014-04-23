@@ -78,12 +78,39 @@ push_from_clone () {
     popd > /dev/null
 }
 
+cat_from_clone() {
+    path_to_clone="$1"
+    echo "### Contents of '$path_to_clone/$VERSIONED_FILE'..."
+    cat "$path_to_clone/$VERSIONED_FILE"
+    _wait_for_user
+}
+
 log_remote_from_clone() {
     path_to_clone="$1"
     echo
     echo "### HEAD of origin/master as seen by clone '$path_to_clone'..."
     pushd "$path_to_clone" > /dev/null
     git log --format=oneline --abbrev-commit origin/master
+    popd > /dev/null
+    _wait_for_user
+}
+
+pull_origin_master_from_clone() {
+    path_to_clone="$1"
+    echo
+    echo "### Pulling origin master in clone '$path_to_clone'..."
+    pushd "$path_to_clone" > /dev/null
+    git pull origin master
+    popd > /dev/null
+    _wait_for_user
+}
+
+fetch_from_clone() {
+    path_to_clone="$1"
+    echo
+    echo "### Fetching from clone '$path_to_clone'..."
+    pushd "$path_to_clone" > /dev/null
+    git fetch
     popd > /dev/null
     _wait_for_user
 }
@@ -99,8 +126,38 @@ scenario_pull_origin_master_then_log () {
     init
     commit_change "$ALICE_CLONE_PATH" "First feature"
     push_from_clone "$ALICE_CLONE_PATH"
+
     log_remote_from_clone "$ALICE_CLONE_PATH"
+    cat_from_clone "$ALICE_CLONE_PATH"
+
     log_remote_from_clone "$BOB_CLONE_PATH"
+    cat_from_clone "$BOB_CLONE_PATH"
+
+    pull_origin_master_from_clone "$BOB_CLONE_PATH"
+
+    log_remote_from_clone "$BOB_CLONE_PATH"
+    cat_from_clone "$BOB_CLONE_PATH"
+
+    cleanup
+}
+
+scenario_pull_origin_master_and_fetch_then_log () {
+    init
+    commit_change "$ALICE_CLONE_PATH" "First feature"
+    push_from_clone "$ALICE_CLONE_PATH"
+
+    log_remote_from_clone "$ALICE_CLONE_PATH"
+    cat_from_clone "$ALICE_CLONE_PATH"
+
+    log_remote_from_clone "$BOB_CLONE_PATH"
+    cat_from_clone "$BOB_CLONE_PATH"
+
+    pull_origin_master_from_clone "$BOB_CLONE_PATH"
+    fetch_from_clone "$BOB_CLONE_PATH"
+
+    log_remote_from_clone "$BOB_CLONE_PATH"
+    cat_from_clone "$BOB_CLONE_PATH"
+
     cleanup
 }
 
@@ -113,7 +170,8 @@ scenario_pull_origin_master_then_log () {
 
 main() {
     preamble
-    scenario_pull_origin_master_then_log
+    ###scenario_pull_origin_master_then_log
+    scenario_pull_origin_master_and_fetch_then_log
     ###scenario_pull_origin_master_then_postreview
 }
 
