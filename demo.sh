@@ -9,6 +9,7 @@ ROOT="/tmp/gitforoperations"
 [ -e "$ROOT" ] && echo "Root $ROOT already exists. Aborting." && exit 1
 REPO_PATH="$ROOT/repo.git"
 VERSIONED_FILE="code"
+ANOTHER_VERSIONED_FILE="config"
 ALICE_CLONE_PATH="$ROOT/alice"
 BOB_CLONE_PATH="$ROOT/bob"
 
@@ -41,7 +42,9 @@ init () {
     ##echo "# Using Alice's clone to add a file"
     pushd "$ALICE_CLONE_PATH" > /dev/null
     echo "Initial" > "$ALICE_CLONE_PATH/$VERSIONED_FILE"
+    echo "Initial" > "$ALICE_CLONE_PATH/$ANOTHER_VERSIONED_FILE"
     git add "$VERSIONED_FILE"
+    git add "$ANOTHER_VERSIONED_FILE"
     git commit -m"Initial"
     # Stupid hack to turn off interactivity, caused by the stupid hack of
     # reusing push_from_clone, caused by the fact that I need a bare repo
@@ -63,11 +66,13 @@ init () {
 commit_change () {
     path_to_clone="$1"
     contents_to_add="$2"
+    file_to_modify="$3"
+    [ -z "$3" ] && file_to_modify="$VERSIONED_FILE"
     echo
     echo "### Committing new contents '$contents_to_add' in clone $path_to_clone..."
 
     pushd "$path_to_clone" > /dev/null
-    echo "$contents_to_add" >> "$VERSIONED_FILE"
+    echo "$contents_to_add" >> "$file_to_modify"
     git commit -am "$contents_to_add"
     popd > /dev/null
 }
@@ -119,13 +124,26 @@ fetch_from_clone() {
     _wait_for_user
 }
 
+branch_clone() {
+    path_to_clone="$1"
+    branch="$2"
+    echo
+    echo "### Creating branch '$branch' in clone '$path_to_clone'..."
+    pushd "$path_to_clone" > /dev/null
+    git checkout origin/master -b "$branch"
+    popd > /dev/null
+}
+
 postreview_from_clone() {
     path_to_clone="$1"
     echo
     echo "### Postreview from clone '$path_to_clone'..."
     pushd "$path_to_clone" > /dev/null
     merge_base="$(git merge-base origin/master HEAD)"
-    echo "# merge-base: " $merge_base
+    echo "# Merge-base: " $merge_base
+    git log --oneline -n 1 "$merge_base"
+    echo
+    echo "# Diff: "
     git diff $merge_base..HEAD
     popd > /dev/null
     _wait_for_user
@@ -177,20 +195,64 @@ scenario_pull_origin_master_and_fetch_then_log () {
     cleanup
 }
 
-scenario_pull_origin_master_then_postreview () {
+scenario_branch_then_postreview () {
     init
+
+    branch_clone "$BOB_CLONE_PATH" "bob_branch"
+    commit_change "$BOB_CLONE_PATH" "Bob's Big feature"
 
     commit_change "$ALICE_CLONE_PATH" "First feature"
     push_from_clone "$ALICE_CLONE_PATH"
+
+    postreview_from_clone "$BOB_CLONE_PATH"
+
+    cleanup
+}
+
+scenario_branch_and_pull_master_then_postreview () {
+    init
+
+    branch_clone "$BOB_CLONE_PATH" "bob_branch"
+    commit_change "$BOB_CLONE_PATH" "Bob's Big feature"
+
+    # Modify a different file to prevent a merge conflict;
+    # that's not the point of this scenario.
+    commit_change "$ALICE_CLONE_PATH" "First feature" "$ANOTHER_VERSIONED_FILE"
+    push_from_clone "$ALICE_CLONE_PATH"
+
+    pull_origin_master_from_clone "$BOB_CLONE_PATH"
+
+    postreview_from_clone "$BOB_CLONE_PATH"
+
+    cleanup
+}
+
+scenario_branch_and_pull_master_and_fetch_then_postreview () {
+    init
+
+    branch_clone "$BOB_CLONE_PATH" "bob_branch"
+    commit_change "$BOB_CLONE_PATH" "Bob's Big feature"
+
+    # Modify a different file to prevent a merge conflict;
+    # that's not the point of this scenario.
+    commit_change "$ALICE_CLONE_PATH" "First feature" "$ANOTHER_VERSIONED_FILE"
+    push_from_clone "$ALICE_CLONE_PATH"
+
+    pull_origin_master_from_clone "$BOB_CLONE_PATH"
+    fetch_from_clone "$BOB_CLONE_PATH"
+
+    postreview_from_clone "$BOB_CLONE_PATH"
 
     cleanup
 }
 
 main() {
     ##preamble
-    scenario_pull_origin_master_then_log
-    scenario_pull_origin_master_and_fetch_then_log
-    ###scenario_pull_origin_master_then_postreview
+    ###scenario_pull_origin_master_then_log
+    ###scenario_pull_origin_master_and_fetch_then_log
+    ###scenario_branch_then_postreview
+    ###scenario_branch_and_pull_master_then_postreview
+    scenario_branch_and_pull_master_and_fetch_then_postreview
 }
 
 main
