@@ -26,19 +26,19 @@ preamble () {
 }
 
 init () {
-    #echo
-    #echo "### Initializing..."
+    ##echo
+    ##echo "### Initializing..."
 
-    #echo "# Creating root $ROOT"
+    ##echo "# Creating root $ROOT"
     mkdir -p "$REPO_PATH"
 
-    #echo "# Initializing bare and empty repo $REPO_PATH"
+    ##echo "# Initializing bare and empty repo $REPO_PATH"
     git --git-dir "$REPO_PATH" init --bare
 
-    #echo "# Cloning $REPO_PATH for Alice into $ALICE_CLONE_PATH"
+    ##echo "# Cloning $REPO_PATH for Alice into $ALICE_CLONE_PATH"
     git clone "$REPO_PATH" "$ALICE_CLONE_PATH"
 
-    #echo "# Using Alice's clone to add a file"
+    ##echo "# Using Alice's clone to add a file"
     pushd "$ALICE_CLONE_PATH" > /dev/null
     echo "Initial" > "$ALICE_CLONE_PATH/$VERSIONED_FILE"
     git add "$VERSIONED_FILE"
@@ -52,7 +52,7 @@ init () {
     INTERACTIVE="$ORIG_INTERACTIVE"
     popd > /dev/null
 
-    #echo "# Cloning $REPO_PATH for Bob into $BOB_CLONE_PATH"
+    ##echo "# Cloning $REPO_PATH for Bob into $BOB_CLONE_PATH"
     git clone "$REPO_PATH" "$BOB_CLONE_PATH"
 
     echo "### Done initializing!"
@@ -119,6 +119,18 @@ fetch_from_clone() {
     _wait_for_user
 }
 
+postreview_from_clone() {
+    path_to_clone="$1"
+    echo
+    echo "### Postreview from clone '$path_to_clone'..."
+    pushd "$path_to_clone" > /dev/null
+    merge_base="$(git merge-base origin/master HEAD)"
+    echo "# merge-base: " $merge_base
+    git diff $merge_base..HEAD
+    popd > /dev/null
+    _wait_for_user
+}
+
 cleanup () {
     echo
     echo "### Cleaning up root $ROOT..."
@@ -165,15 +177,17 @@ scenario_pull_origin_master_and_fetch_then_log () {
     cleanup
 }
 
-###scenario_pull_origin_master_then_postreview () {
-###    init
-###    cleanup
-###    commit_change "$ALICE_CLONE_PATH" "First feature"
-###    push_from_clone "$ALICE_CLONE_PATH"
-###}
+scenario_pull_origin_master_then_postreview () {
+    init
+
+    commit_change "$ALICE_CLONE_PATH" "First feature"
+    push_from_clone "$ALICE_CLONE_PATH"
+
+    cleanup
+}
 
 main() {
-    preamble
+    ##preamble
     scenario_pull_origin_master_then_log
     scenario_pull_origin_master_and_fetch_then_log
     ###scenario_pull_origin_master_then_postreview
