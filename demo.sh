@@ -157,8 +157,15 @@ cleanup () {
 }
 
 scenario_pull_origin_master_then_log () {
+    echo "###########################"
+    echo "scenario_pull_origin_master_then_log"
+    echo
+    echo "git pull origin master"
+    echo "git log origin/master"
+    echo "###########################"
+
     init
-    commit_change "$ALICE_CLONE_PATH" "First feature"
+    commit_change "$ALICE_CLONE_PATH" "Alice's feature"
     push_from_clone "$ALICE_CLONE_PATH"
 
     log_remote_from_clone "$ALICE_CLONE_PATH"
@@ -176,8 +183,16 @@ scenario_pull_origin_master_then_log () {
 }
 
 scenario_pull_origin_master_and_fetch_then_log () {
+    echo "###########################"
+    echo "scenario_pull_origin_master_and_fetch_then_log"
+    echo
+    echo "git pull origin master"
+    echo "git fetch"
+    echo "git log origin/master"
+    echo "###########################"
+
     init
-    commit_change "$ALICE_CLONE_PATH" "First feature"
+    commit_change "$ALICE_CLONE_PATH" "Alice's feature"
     push_from_clone "$ALICE_CLONE_PATH"
 
     log_remote_from_clone "$ALICE_CLONE_PATH"
@@ -196,12 +211,20 @@ scenario_pull_origin_master_and_fetch_then_log () {
 }
 
 scenario_branch_then_postreview () {
+    echo "###########################"
+    echo "scenario_branch_then_postreview"
+    echo
+    echo "Bob cuts a branch and adds a feature"
+    echo "Meanwhile Alice adds a feature to master"
+    echo "Bob runs postreview"
+    echo "###########################"
+
     init
 
     branch_clone "$BOB_CLONE_PATH" "bob_branch"
     commit_change "$BOB_CLONE_PATH" "Bob's Big feature"
 
-    commit_change "$ALICE_CLONE_PATH" "First feature"
+    commit_change "$ALICE_CLONE_PATH" "Alice's feature"
     push_from_clone "$ALICE_CLONE_PATH"
 
     postreview_from_clone "$BOB_CLONE_PATH"
@@ -210,6 +233,15 @@ scenario_branch_then_postreview () {
 }
 
 scenario_branch_and_pull_master_then_postreview () {
+    echo "###########################"
+    echo "scenario_branch_and_pull_master_then_postreview"
+    echo
+    echo "Bob cuts a branch and adds a feature"
+    echo "Meanwhile Alice adds a feature to master"
+    echo "Bob runs git pull origin master"
+    echo "Bob runs postreview"
+    echo "###########################"
+
     init
 
     branch_clone "$BOB_CLONE_PATH" "bob_branch"
@@ -217,7 +249,7 @@ scenario_branch_and_pull_master_then_postreview () {
 
     # Modify a different file to prevent a merge conflict;
     # that's not the point of this scenario.
-    commit_change "$ALICE_CLONE_PATH" "First feature" "$ANOTHER_VERSIONED_FILE"
+    commit_change "$ALICE_CLONE_PATH" "Alice's Feature WHAT IS THIS DOING HERE???" "$ANOTHER_VERSIONED_FILE"
     push_from_clone "$ALICE_CLONE_PATH"
 
     pull_origin_master_from_clone "$BOB_CLONE_PATH"
@@ -228,6 +260,16 @@ scenario_branch_and_pull_master_then_postreview () {
 }
 
 scenario_branch_and_pull_master_and_fetch_then_postreview () {
+    echo "###########################"
+    echo "scenario_branch_and_pull_master_and_fetch_then_postreview"
+    echo
+    echo "Bob cuts a branch and adds a feature"
+    echo "Meanwhile Alice adds a feature to master"
+    echo "Bob runs git pull origin master"
+    echo "Bob runs git fetch"
+    echo "Bob runs postreview"
+    echo "###########################"
+
     init
 
     branch_clone "$BOB_CLONE_PATH" "bob_branch"
@@ -235,7 +277,7 @@ scenario_branch_and_pull_master_and_fetch_then_postreview () {
 
     # Modify a different file to prevent a merge conflict;
     # that's not the point of this scenario.
-    commit_change "$ALICE_CLONE_PATH" "First feature" "$ANOTHER_VERSIONED_FILE"
+    commit_change "$ALICE_CLONE_PATH" "Alice's Feature WHAT IS THIS DOING HERE???" "$ANOTHER_VERSIONED_FILE"
     push_from_clone "$ALICE_CLONE_PATH"
 
     pull_origin_master_from_clone "$BOB_CLONE_PATH"
@@ -248,10 +290,10 @@ scenario_branch_and_pull_master_and_fetch_then_postreview () {
 
 main() {
     ##preamble
-    ###scenario_pull_origin_master_then_log
-    ###scenario_pull_origin_master_and_fetch_then_log
-    ###scenario_branch_then_postreview
-    ###scenario_branch_and_pull_master_then_postreview
+    scenario_pull_origin_master_then_log
+    scenario_pull_origin_master_and_fetch_then_log
+    scenario_branch_then_postreview
+    scenario_branch_and_pull_master_then_postreview
     scenario_branch_and_pull_master_and_fetch_then_postreview
 }
 
