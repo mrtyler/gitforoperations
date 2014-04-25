@@ -20,12 +20,6 @@ _wait_for_user() {
     fi
 }
 
-preamble () {
-    echo "###########################"
-    echo "# GIT FOR OPERATIONS DEMO #"
-    echo "###########################"
-}
-
 init () {
     ##echo
     ##echo "### Initializing..."
@@ -34,24 +28,24 @@ init () {
     mkdir -p "$REPO_PATH"
 
     ##echo "# Initializing bare and empty repo $REPO_PATH"
-    git --git-dir "$REPO_PATH" init --bare
+    git --git-dir "$REPO_PATH" init --bare > /dev/null
 
     ##echo "# Cloning $REPO_PATH for Alice into $ALICE_CLONE_PATH"
-    git clone "$REPO_PATH" "$ALICE_CLONE_PATH"
+    git clone "$REPO_PATH" "$ALICE_CLONE_PATH" > /dev/null 2>&1
 
     ##echo "# Using Alice's clone to add a file"
     pushd "$ALICE_CLONE_PATH" > /dev/null
     echo "Initial" > "$ALICE_CLONE_PATH/$VERSIONED_FILE"
     echo "Initial" > "$ALICE_CLONE_PATH/$ANOTHER_VERSIONED_FILE"
-    git add "$VERSIONED_FILE"
-    git add "$ANOTHER_VERSIONED_FILE"
-    git commit -m"Initial"
+    git add "$VERSIONED_FILE" > /dev/null
+    git add "$ANOTHER_VERSIONED_FILE" > /dev/null
+    git commit -m"Initial" > /dev/null
     # Stupid hack to turn off interactivity, caused by the stupid hack of
     # reusing push_from_clone, caused by the fact that I need a bare repo
     # because I can't push to a non-bare repo.
     ORIG_INTERACTIVE="$INTERACTIVE"
     INTERACTIVE=""
-    push_from_clone "$ALICE_CLONE_PATH"
+    push_from_clone "$ALICE_CLONE_PATH" > /dev/null
     INTERACTIVE="$ORIG_INTERACTIVE"
     popd > /dev/null
 
@@ -157,6 +151,8 @@ cleanup () {
 }
 
 scenario_pull_origin_master_then_log () {
+    init
+
     echo "###########################"
     echo "scenario_pull_origin_master_then_log"
     echo
@@ -164,7 +160,6 @@ scenario_pull_origin_master_then_log () {
     echo "git log origin/master"
     echo "###########################"
 
-    init
     commit_change "$ALICE_CLONE_PATH" "Alice's feature"
     push_from_clone "$ALICE_CLONE_PATH"
 
@@ -183,6 +178,8 @@ scenario_pull_origin_master_then_log () {
 }
 
 scenario_pull_origin_master_and_fetch_then_log () {
+    init
+
     echo "###########################"
     echo "scenario_pull_origin_master_and_fetch_then_log"
     echo
@@ -191,7 +188,6 @@ scenario_pull_origin_master_and_fetch_then_log () {
     echo "git log origin/master"
     echo "###########################"
 
-    init
     commit_change "$ALICE_CLONE_PATH" "Alice's feature"
     push_from_clone "$ALICE_CLONE_PATH"
 
@@ -211,6 +207,8 @@ scenario_pull_origin_master_and_fetch_then_log () {
 }
 
 scenario_branch_then_postreview () {
+    init
+
     echo "###########################"
     echo "scenario_branch_then_postreview"
     echo
@@ -218,8 +216,6 @@ scenario_branch_then_postreview () {
     echo "Meanwhile Alice adds a feature to master"
     echo "Bob runs postreview"
     echo "###########################"
-
-    init
 
     branch_clone "$BOB_CLONE_PATH" "bob_branch"
     commit_change "$BOB_CLONE_PATH" "Bob's Big feature"
@@ -233,6 +229,8 @@ scenario_branch_then_postreview () {
 }
 
 scenario_branch_and_pull_master_then_postreview () {
+    init
+
     echo "###########################"
     echo "scenario_branch_and_pull_master_then_postreview"
     echo
@@ -241,8 +239,6 @@ scenario_branch_and_pull_master_then_postreview () {
     echo "Bob runs git pull origin master"
     echo "Bob runs postreview"
     echo "###########################"
-
-    init
 
     branch_clone "$BOB_CLONE_PATH" "bob_branch"
     commit_change "$BOB_CLONE_PATH" "Bob's Big feature"
@@ -260,6 +256,8 @@ scenario_branch_and_pull_master_then_postreview () {
 }
 
 scenario_branch_and_pull_master_and_fetch_then_postreview () {
+    init
+
     echo "###########################"
     echo "scenario_branch_and_pull_master_and_fetch_then_postreview"
     echo
@@ -269,8 +267,6 @@ scenario_branch_and_pull_master_and_fetch_then_postreview () {
     echo "Bob runs git fetch"
     echo "Bob runs postreview"
     echo "###########################"
-
-    init
 
     branch_clone "$BOB_CLONE_PATH" "bob_branch"
     commit_change "$BOB_CLONE_PATH" "Bob's Big feature"
@@ -289,7 +285,6 @@ scenario_branch_and_pull_master_and_fetch_then_postreview () {
 }
 
 main() {
-    ##preamble
     scenario_pull_origin_master_then_log
     scenario_pull_origin_master_and_fetch_then_log
     scenario_branch_then_postreview
