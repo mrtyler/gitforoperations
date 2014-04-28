@@ -287,7 +287,7 @@ scenario_branch_and_pull_master_and_fetch_then_postreview () {
 main() {
     scenario_pull_origin_master_then_log
     scenario_pull_origin_master_and_fetch_then_log
-    scenario_branch_then_postreview
+    ###scenario_branch_then_postreview
     scenario_branch_and_pull_master_then_postreview
     scenario_branch_and_pull_master_and_fetch_then_postreview
 }
